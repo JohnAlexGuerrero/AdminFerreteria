@@ -2,13 +2,13 @@ from django.contrib import admin
 from datetime import datetime
 from django.db.models import Sum
 
-from shopping.models import Providers, Invoice, Order, PriceProducts
+from shopping.models import Providers, Invoice, Order, PriceProducts, Payment
 
 from inventory.models import Product
 
 @admin.register(Invoice)
 class InvoicesAdmin(admin.ModelAdmin):
-    list_display = ('number','provider','created_at','expiration_at','total','items','days','status')
+    list_display = ('number','provider','created_at','expiration_at','total','display_balance','items','days','status')
     
     invoice_arr = []
     
@@ -21,13 +21,17 @@ class InvoicesAdmin(admin.ModelAdmin):
         days = (datetime.strptime(str(obj.expiration_at), "%Y-%m-%d") - now).days
         return days
     
-    def status(self, obj):
-        # invoices = [ invoice.number for invoice in PaidShopping.objects.all()[:5]]
-        
+    def status(self, obj):        
         return "Pending" if (obj.total) != 0 else "Paid"
 
     def items(self, obj):
         return Order.objects.filter(invoice__id=obj.id).count()
+    
+    def display_balance(self, obj): #Book.objects.annotate(num_authors=Count("authors")).filter(num_authors__gt=1)
+        total_pays = Payment.objects.annotate(value=Sum('total')).filter(invoice__number=obj.number)
+        return obj.total - total_pays[0].value
+    
+    display_balance.short_description = 'saldo'
     
 @admin.register(Providers)
 class ProvidersAdmin(admin.ModelAdmin):
@@ -38,7 +42,7 @@ class ProvidersAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('display_provider','invoice', 'product','created_at')
     
-    ordering = ('created_at',)
+    ordering = ('-created_at',)
     
     def display_provider(self, obj):
         return obj.invoice.provider
@@ -60,6 +64,9 @@ class PriceProductsAdmin(admin.ModelAdmin):
 
 
 
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('number','invoice','created_at','total','balance','comments')
 
 
 

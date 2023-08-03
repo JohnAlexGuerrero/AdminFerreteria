@@ -1,5 +1,7 @@
 from django.db import models
 
+import pandas as pd
+
 from inventory.models import Product
 
 from django.urls import reverse
@@ -21,8 +23,18 @@ list_prices = (
     ('No','No aplica',),
 )
 
+type_of_pay = (
+    ('Ef','Efectivo'),
+    ('Co','Consignacion'),
+    ('Tr','Transferencia'),
+)
+
 def get_reference_product():
     return f'REF0031{Order.objects.all().count() + 2}'
+
+def get_number_pay():
+    return 2301 + Payment.objects.all().count()
+
 
 class Providers(models.Model):
     name = models.CharField(("empresa"), max_length=50, unique=True)
@@ -94,3 +106,23 @@ class PriceProducts(models.Model):
 
     def get_absolute_url(self):
         return reverse("Price_detail", kwargs={"pk": self.pk})
+    
+class Payment(models.Model):
+    invoice = models.ForeignKey(Invoice, verbose_name=("pay"), on_delete=models.CASCADE)
+    number = models.CharField(("comprobante"), max_length=50, default=get_number_pay)
+    total = models.DecimalField(("total"), max_digits=10, decimal_places=2)
+    balance = models.DecimalField(("saldo"), max_digits=10, decimal_places=2, default=0)
+    way_to_pay = models.CharField(("forma de pago"), max_length=50, choices=type_of_pay)
+    created_at = models.DateField(("created_at"), auto_now_add=False)
+    comments = models.CharField(("observaciones"), max_length=200, null=True)
+    
+    class Meta:
+        verbose_name = ("Payment")
+        verbose_name_plural = ("Payments")
+
+    def __str__(self):
+        return self.number
+
+    def get_absolute_url(self):
+        return reverse("Payment_detail", kwargs={"pk": self.pk})
+
