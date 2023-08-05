@@ -14,3 +14,5 @@ class CategoryAdmin(admin.ModelAdmin):
 
     def items(self, obj):
         return Product.objects.filter(category__name=obj.name).count()
+    
+    

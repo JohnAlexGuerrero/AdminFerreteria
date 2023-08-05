@@ -14,22 +14,28 @@ class InvoicesAdmin(admin.ModelAdmin):
     
     ordering = ('created_at',)
     
-    search_fields = ('providers',)
+    search_fields = ('provider__name',)
     
     def days(self, obj):
         now = datetime.now()
         days = (datetime.strptime(str(obj.expiration_at), "%Y-%m-%d") - now).days
         return days
     
-    def status(self, obj):        
-        return "Pending" if (obj.total) != 0 else "Paid"
+    def status(self, obj):
+        pays = Payment.objects.annotate(balance_sum=Sum('total')).filter(invoice__number=obj.number)
+        
+        if len(pays) != 0:
+            print(pays[0].balance_sum)
+            return "Pending" if (obj.total - pays[0].balance_sum) != 0 else "Paid"
+   
+        return "Pending"
 
     def items(self, obj):
         return Order.objects.filter(invoice__id=obj.id).count()
     
     def display_balance(self, obj): #Book.objects.annotate(num_authors=Count("authors")).filter(num_authors__gt=1)
         total_pays = Payment.objects.annotate(value=Sum('total')).filter(invoice__number=obj.number)
-        return obj.total - total_pays[0].value
+        return (obj.total - total_pays[0].value) if len(total_pays) != 0 else obj.total
     
     display_balance.short_description = 'saldo'
     
@@ -50,7 +56,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(PriceProducts)
 class PriceProductsAdmin(admin.ModelAdmin):
-    list_display = ('order','display_reference','price','display_unit_measure')
+    list_display = ('order','display_reference','price','display_stock','display_unit_measure')
     
     
     def display_reference(self, obj):
@@ -59,7 +65,11 @@ class PriceProductsAdmin(admin.ModelAdmin):
     def display_unit_measure(self, obj):
         return obj.order.product.unit_measure
     
+    def display_stock(self,obj):
+        return obj.order.quantity
+    
     display_reference.short_description = 'referencia'
+    display_stock.short_description = 'avalible'
     display_unit_measure.short_description = 'unidad'
 
 
