@@ -12,7 +12,7 @@ class InvoicesAdmin(admin.ModelAdmin):
     
     invoice_arr = []
     
-    ordering = ('created_at',)
+    ordering = ('-created_at',)
     
     search_fields = ('provider__name',)
     
@@ -56,7 +56,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(PriceProducts)
 class PriceProductsAdmin(admin.ModelAdmin):
-    list_display = ('order','display_reference','price','display_stock','display_unit_measure')
+    list_display = ('order','display_reference','display_stock','display_unit_measure','price','utility')
     
     
     def display_reference(self, obj):
@@ -68,6 +68,7 @@ class PriceProductsAdmin(admin.ModelAdmin):
     def display_stock(self,obj):
         return obj.order.quantity
     
+    
     display_reference.short_description = 'referencia'
     display_stock.short_description = 'avalible'
     display_unit_measure.short_description = 'unidad'
@@ -77,24 +78,3 @@ class PriceProductsAdmin(admin.ModelAdmin):
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('number','invoice','created_at','total','balance','comments')
-
-
-
-# @admin.register(ProductInvoice)
-# class ProductInvoiceAdmin(admin.ModelAdmin):
-#     list_display = ('product','quantity','get_unit_measure','price','get_value_total','get_date_created',)
-
-#     def get_value_total(self, obj):
-#         return obj.price * obj.quantity
-
-#     def get_unit_measure(self, obj):
-#         product = Product.objects.get(name=obj)
-#         return product.unit_measure
-    
-#     def get_date_created(self,obj):
-#         invoice = Invoice.objects.get(number=obj)
-#         return 23
-
-#     get_value_total.short_description = 'total'
-#     get_unit_measure.short_description = 'unidad'
-#     get_date_created.short_description = 'created'
