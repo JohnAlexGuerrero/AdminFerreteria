@@ -22,7 +22,7 @@
 
 </head>
 
-<body id="page-top">
+<body id="page-top" class="bg-gradient-primary">
 
   {% block sider_bar %}
 
@@ -337,6 +337,8 @@
         <!-- End of Topbar -->
         {% endblock top_bar %}
 
+        {% block content %}
+
         <!-- Begin Page Content -->
         <div class="container-fluid">
 
@@ -348,6 +350,7 @@
 
       </div>
       <!-- End of Main Content -->
+      {% endblock content %}
 
       {% block footer %}
       <!-- Footer -->
@@ -387,7 +390,7 @@
         <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
         <div class="modal-footer">
           <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-          <a class="btn btn-primary" href="login.html">Logout</a>
+          <a class="btn btn-primary" href="{% url 'logout' %}">Logout</a>
         </div>
       </div>
     </div>
